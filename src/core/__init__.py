@@ -1,0 +1,1 @@
+# Core Module für Sticky-Bot 

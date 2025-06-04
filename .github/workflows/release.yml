@@ -1,0 +1,181 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger auf alle Tags die mit v beginnen (z.B. v1.0.0)
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+        
+    - name: Build with Minimal Build System
+      run: |
+        Write-Host "🚀 Starte minimales Build-System..."
+        python build.py
+        
+    - name: Verify Minimal Build Results
+      run: |
+        Write-Host "🔍 Überprüfe minimale Build-Ergebnisse..."
+        
+        if (Test-Path "dist\StickyBot.exe") { 
+          $size = (Get-Item "dist\StickyBot.exe").Length / 1MB
+          Write-Host "✅ StickyBot.exe: ($([math]::Round($size, 1)) MB)"
+        } else {
+          Write-Host "❌ StickyBot.exe nicht gefunden!"
+          exit 1
+        }
+        
+        # Prüfe nur die essentiellen Dateien (keine .env für GUI-Setup!)
+        $requiredFiles = @(
+          "dist\StickyBot.exe",
+          "dist\data\sticky_messages.json",
+          "dist\data\bot_roles.json",
+          "dist\README.md"
+        )
+        
+        Write-Host "📋 Prüfe essentielle Dateien..."
+        foreach ($file in $requiredFiles) {
+          if (Test-Path $file) {
+            Write-Host "✅ $file"
+          } else {
+            Write-Host "❌ $file FEHLT!"
+            exit 1
+          }
+        }
+        
+        # Prüfe dass KEINE .env vorhanden ist (wichtig für GUI-Setup!)
+        if (Test-Path "dist\.env") {
+          Write-Host "❌ .env gefunden - würde GUI-Setup verhindern!"
+          exit 1
+        } else {
+          Write-Host "✅ Keine .env → GUI-Setup wird starten"
+        }
+        
+        Write-Host "📁 Finale dist-Struktur:"
+        Get-ChildItem "dist" -Recurse | Where-Object {$_.Name -notlike "*.dll" -and $_.Name -notlike "*.pyd"} | Select-Object Name, Length, FullName
+        
+    - name: Create Minimal Release Package
+      run: |
+        Write-Host "📦 Erstelle ultra-minimales Release-Paket..."
+        
+        # Release-Name mit Tag
+        $releaseName = "StickyBot-${{ github.ref_name }}"
+        mkdir $releaseName
+        
+        Write-Host "📁 Kopiere nur essentielle Dateien..."
+        
+        # 1. Hauptprogramm
+        Copy-Item "dist\StickyBot.exe" "$releaseName\"
+        Write-Host "✅ StickyBot.exe kopiert"
+        
+        # 2. data-Ordner mit JSON-Dateien
+        Copy-Item -Path "dist\data" -Destination "$releaseName\data" -Recurse
+        Write-Host "✅ data/ Ordner kopiert"
+        
+        # 3. README.md
+        Copy-Item "dist\README.md" "$releaseName\"
+        Write-Host "✅ README.md kopiert"
+        
+        Write-Host "📦 Ultra-minimales Release Package erstellt:"
+        Write-Host "├── StickyBot.exe"
+        Write-Host "├── data/"
+        Write-Host "│   ├── sticky_messages.json"
+        Write-Host "│   └── bot_roles.json"
+        Write-Host "└── README.md"
+        Write-Host ""
+        Write-Host "💡 Keine .env → GUI-Setup startet automatisch beim ersten Start!"
+        
+        # Zeige finale Struktur
+        Get-ChildItem $releaseName -Recurse | Select-Object Name, Length
+        
+    - name: Create Minimal ZIP Archive
+      run: |
+        $releaseName = "StickyBot-${{ github.ref_name }}"
+        Compress-Archive -Path "$releaseName\*" -DestinationPath "$releaseName.zip"
+        Write-Host "📦 Minimales ZIP erstellt: $releaseName.zip"
+        $zipSize = (Get-Item "$releaseName.zip").Length / 1MB
+        Write-Host "📦 ZIP-Größe: $([math]::Round($zipSize, 1)) MB"
+        
+    - name: Archive Minimal Release Files
+      uses: actions/upload-artifact@v4
+      with:
+        name: StickyBot-minimal-release
+        path: StickyBot-${{ github.ref_name }}/
+        
+    - name: Create Minimal Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        name: Sticky-Bot ${{ github.ref_name }}
+        body: |
+          ## 🤖 Sticky-Bot ${{ github.ref_name }}
+          
+          ### 📦 **Download**
+          **StickyBot-${{ github.ref_name }}.zip** - Minimales Release-Paket
+          
+          ### 🚀 **Installation:**
+          1. **ZIP entpacken**
+          2. **`StickyBot.exe` starten** (Setup-Dialog erscheint automatisch)
+          3. **Discord Bot Token eingeben**
+          4. **Fertig!** 🎉
+          
+          ### 📂 **Enthält nur essentielle Dateien:**
+          ```
+          StickyBot-${{ github.ref_name }}/
+          ├── StickyBot.exe              # Hauptprogramm mit GUI-Kontrollzentrum
+          ├── data/                      # Bot-Daten
+          │   ├── sticky_messages.json   # Alle Sticky Messages
+          │   └── bot_roles.json         # Bot Master & Editoren
+          └── README.md                  # Vollständige Deutsche Anleitung
+          ```
+          
+          ### 🔑 **Discord Bot Token:**
+          1. **https://discord.com/developers/applications** → "New Application"
+          2. **"Bot" Tab** → "Add Bot" → **Token kopieren**
+          3. **"Message Content Intent"** aktivieren ✅
+          
+          ### 🎯 **Features:**
+          - 🎮 **Management-Kontrollzentrum** mit 3 Tabs für Bot-Kontrolle
+          - 📌 **Automatische Sticky Messages** mit Pokémon-Bildern
+          - 👑 **Server-isolierte Berechtigungen** (Bot Master & Editoren)
+          - 🎨 **Schöne Embeds** mit anpassbaren Inhalten
+          - ⏰ **Intelligente Verzögerungen** gegen Spam
+          - 🔧 **GUI-Setup** mit automatischer Token-Validierung
+          - 🏠 **Multi-Server Support** - verwalte mehrere Discord-Server
+          - 🛡️ **Sichere Authentifizierung** mit Challenge-Response System
+          
+          ### 🔧 **Erste Schritte:**
+          1. **Bot Token erstellen** (Discord Developer Portal)
+          2. **StickyBot.exe starten** → Setup-Dialog erscheint
+          3. **Token eingeben** → Validierung erfolgt automatisch
+          4. **Bot starten** im Status-Tab
+          5. **Discord:** `/setup_botmaster` um Bot-Master zu werden
+          6. **GUI:** Sticky Manager für Message-Verwaltung
+          
+          Bei Problemen: Siehe **README.md** für vollständige Anleitung!
+          
+          ---
+          **Made with ❤️ - Minimal, Sauber & Professionell!**
+        draft: false
+        prerelease: false
+        files: |
+          StickyBot-${{ github.ref_name }}.zip 

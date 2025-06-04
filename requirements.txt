@@ -1,0 +1,40 @@
+# Discord Bot Anforderungen
+discord.py>=2.3.0,<3.0.0
+
+# Authentifizierung und OAuth2
+flask>=2.3.0,<3.0.0
+requests>=2.31.0,<3.0.0
+
+# Umgebungsvariablen
+python-dotenv>=1.0.0,<2.0.0
+
+# HTTP Client für APIs
+aiohttp>=3.8.0,<4.0.0
+
+# JSON Web Tokens (falls benötigt)
+PyJWT>=2.8.0,<3.0.0
+
+# Sichere Verschlüsselung für Bot-Daten
+cryptography>=41.0.0,<42.0.0
+
+# GUI (normalerweise bereits in Python enthalten)
+# tkinter - Standard in Python
+
+# Build-Abhängigkeiten (optional)
+pyinstaller>=5.13.0,<6.0.0
+
+# Environment Configuration
+python-dotenv>=1.0.0
+
+# OAuth2 and Web Framework
+jinja2>=3.1.0
+
+# GUI Dependencies
+Pillow>=9.5.0
+
+# Optional: For enhanced logging
+colorlog>=6.7.0
+
+# Development Dependencies (optional)
+pytest>=7.4.0
+black>=23.7.0
