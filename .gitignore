@@ -34,7 +34,7 @@ MANIFEST
 
 # PyInstaller
 *.manifest
-*.spec
+# *.spec - bot.spec muss ins Repository für GitHub Actions!
 
 # Unit test / coverage reports
 htmlcov/
