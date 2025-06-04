@@ -24,10 +24,10 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller
         
-    - name: Build with Minimal Build System
+    - name: Build with Simple Build System
       run: |
-        Write-Host "🚀 Starte minimales Build-System..."
-        python build.py
+        Write-Host "🚀 Starte einfaches Build-System..."
+        python build_simple.py
         
     - name: Verify Minimal Build Results
       run: |
