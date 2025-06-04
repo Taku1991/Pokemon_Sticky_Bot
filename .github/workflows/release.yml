@@ -5,9 +5,7 @@ on:
     tags:
       - 'v*'  # Trigger auf alle Tags die mit v beginnen (z.B. v1.0.0)
 
-permissions:
-  contents: write
-  releases: write
+
 
 jobs:
   build-and-release:
