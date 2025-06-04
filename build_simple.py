@@ -94,11 +94,11 @@ def build_simple():
     
     print("\n[SUCCESS] Einfacher Build erfolgreich!")
     print("Struktur:")
-    print("├── StickyBot.exe")
-    print("├── data/")
-    print("│   ├── sticky_messages.json")
-    print("│   └── bot_roles.json")
-    print("└── README.md")
+    print("|-- StickyBot.exe")
+    print("|-- data/")
+    print("|   |-- sticky_messages.json")
+    print("|   |-- bot_roles.json")
+    print("|-- README.md")
     
     return True
 
