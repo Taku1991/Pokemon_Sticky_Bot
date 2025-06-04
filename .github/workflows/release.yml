@@ -6,7 +6,6 @@ on:
       - 'v*'  # Trigger auf alle Tags die mit v beginnen (z.B. v1.0.0)
 
 
-
 jobs:
   build-and-release:
     runs-on: windows-latest
